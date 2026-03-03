@@ -1,8 +1,359 @@
+
 import streamlit as st
 import requests
 import re
 import time
 from typing import List, Dict, Any
+
+st.set_page_config(page_title="SciPulse", page_icon="🧬", layout="wide")
+
+API_SEARCH = "https://api.semanticscholar.org/graph/v1/paper/search"
+
+st.markdown("""
+
+<style>
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600&display=swap');
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+[data-testid="stAppViewContainer"] {
+    background-color: #080f08;
+    font-family: 'DM Sans', sans-serif;
+}
+[data-testid="stAppViewContainer"] > .main > .block-container {
+    padding: 2rem 2.5rem 4rem 2.5rem;
+    max-width: 1100px;
+}
+[data-testid="stSidebar"] {
+    background-color: #060d06;
+    border-right: 1px solid #162016;
+}
+[data-testid="stSidebar"] > div { padding: 1.5rem 1rem; }
+
+/* Sidebar buttons */
+[data-testid="stSidebar"] .stButton button {
+    background: transparent;
+    color: #5a8a5a;
+    border: 1px solid #1a2a1a;
+    border-radius: 6px;
+    width: 100%;
+    text-align: left;
+    padding: 7px 11px;
+    font-size: 0.78rem;
+    font-family: 'DM Sans', sans-serif;
+    margin-bottom: 3px;
+    transition: all 0.15s ease;
+}
+[data-testid="stSidebar"] .stButton button:hover {
+    border-color: #3a7a3a;
+    color: #7eda7e;
+    background: #0f1a0f;
+}
+
+/* Main search input */
+.stTextInput input {
+    background: #0d160d !important;
+    color: #cfe8cf !important;
+    border: 1px solid #1e3a1e !important;
+    border-radius: 8px !important;
+    padding: 10px 14px !important;
+    font-family: 'DM Sans', sans-serif !important;
+    font-size: 0.95rem !important;
+}
+.stTextInput input:focus {
+    border-color: #4a8a4a !important;
+    box-shadow: 0 0 0 3px #7eda7e18 !important;
+}
+.stTextInput label {
+    color: #4a6a4a !important;
+    font-size: 0.78rem !important;
+    font-family: 'IBM Plex Mono', monospace !important;
+    letter-spacing: 0.06em !important;
+    text-transform: uppercase !important;
+}
+
+/* Search button */
+.stButton > button {
+    background: #0f2a0f;
+    color: #7eda7e;
+    border: 1px solid #2a5a2a;
+    border-radius: 8px;
+    padding: 9px 28px;
+    font-weight: 500;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.88rem;
+    letter-spacing: 0.04em;
+    transition: all 0.15s ease;
+}
+.stButton > button:hover {
+    background: #1a3a1a;
+    border-color: #5a9a5a;
+}
+
+/* Expander */
+.streamlit-expanderHeader {
+    background: #0d160d !important;
+    color: #4a7a4a !important;
+    font-size: 0.78rem !important;
+    font-family: 'IBM Plex Mono', monospace !important;
+    border: 1px solid #1a2a1a !important;
+    border-radius: 6px !important;
+}
+.streamlit-expanderContent {
+    background: #0a130a !important;
+    border: 1px solid #1a2a1a !important;
+    border-top: none !important;
+}
+
+/* ── CUSTOM COMPONENTS ── */
+
+.wordmark {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 1.6rem;
+    font-weight: 500;
+    color: #7eda7e;
+    letter-spacing: -0.02em;
+    margin-bottom: 2px;
+}
+.wordmark span {
+    color: #2a5a2a;
+}
+.tagline {
+    font-size: 0.8rem;
+    color: #3a5a3a;
+    font-family: 'IBM Plex Mono', monospace;
+    letter-spacing: 0.04em;
+    margin-bottom: 2rem;
+}
+
+.stats-row {
+    display: flex;
+    gap: 0;
+    margin-bottom: 2rem;
+    border: 1px solid #162016;
+    border-radius: 8px;
+    overflow: hidden;
+}
+.stat-cell {
+    flex: 1;
+    padding: 12px 16px;
+    border-right: 1px solid #162016;
+    background: #0a130a;
+}
+.stat-cell:last-child { border-right: none; }
+.stat-num {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 1.3rem;
+    font-weight: 500;
+    color: #7eda7e;
+    line-height: 1;
+    margin-bottom: 3px;
+}
+.stat-label {
+    font-size: 0.68rem;
+    color: #3a5a3a;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-family: 'IBM Plex Mono', monospace;
+}
+
+.section-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.68rem;
+    color: #3a6a3a;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    margin-bottom: 12px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #162016;
+}
+
+/* Featured card */
+.featured {
+    background: #0a1a0a;
+    border: 1px solid #1e3e1e;
+    border-radius: 12px;
+    padding: 28px 32px;
+    margin-bottom: 12px;
+    position: relative;
+    overflow: hidden;
+}
+.featured::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, #2a6a2a, #7eda7e, #2a6a2a);
+}
+
+/* Regular paper card */
+.pcard {
+    background: #0a130a;
+    border: 1px solid #142014;
+    border-radius: 10px;
+    padding: 20px 24px;
+    margin-bottom: 8px;
+    transition: border-color 0.15s ease;
+}
+.pcard:hover { border-color: #2a4a2a; }
+
+.card-journal {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.68rem;
+    color: #3a5a3a;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-bottom: 8px;
+}
+.card-title {
+    font-size: 1.05rem;
+    font-weight: 600;
+    color: #d8ecd8;
+    line-height: 1.45;
+    margin-bottom: 8px;
+}
+.featured .card-title {
+    font-size: 1.25rem;
+}
+.card-authors {
+    font-size: 0.75rem;
+    color: #3a5a3a;
+    margin-bottom: 10px;
+    line-height: 1.4;
+}
+
+/* Badges */
+.badges { margin-bottom: 12px; display: flex; flex-wrap: wrap; gap: 5px; }
+.b {
+    display: inline-block;
+    padding: 3px 9px;
+    border-radius: 4px;
+    font-size: 0.67rem;
+    font-family: 'IBM Plex Mono', monospace;
+    font-weight: 400;
+    letter-spacing: 0.03em;
+    border: 1px solid transparent;
+}
+.b-type  { background: #1a1428; color: #a88ccc; border-color: #2a1e3e; }
+.b-year  { background: #141414; color: #888888; border-color: #242424; }
+.b-cite  { background: #281a1a; color: #cc8888; border-color: #3a2020; }
+.b-open  { background: #0e200e; color: #6ab86a; border-color: #1a3a1a; }
+.b-new   { background: #201e0a; color: #b8b060; border-color: #302a10; }
+
+/* Summary box */
+.sumbox {
+    background: #080f08;
+    border: 1px solid #142014;
+    border-radius: 8px;
+    padding: 16px 18px;
+    margin: 12px 0;
+}
+.sum-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0;
+}
+.sum-cell {
+    padding: 10px 14px;
+    border-right: 1px solid #142014;
+    border-bottom: 1px solid #142014;
+}
+.sum-cell:nth-child(2) { border-right: none; }
+.sum-cell:nth-child(3) { border-bottom: none; }
+.sum-cell:nth-child(4) { border-right: none; border-bottom: none; }
+.sum-key {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.62rem;
+    color: #3a6a3a;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 5px;
+}
+.sum-val {
+    font-size: 0.82rem;
+    color: #9abf9a;
+    line-height: 1.55;
+}
+
+.card-footer {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid #142014;
+}
+.read-btn {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.72rem;
+    color: #5a9a5a;
+    text-decoration: none;
+    letter-spacing: 0.04em;
+    transition: color 0.15s;
+}
+.read-btn:hover { color: #7eda7e; }
+
+.sidebar-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.65rem;
+    color: #3a5a3a;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 8px;
+    margin-top: 16px;
+}
+.sidebar-note {
+    font-size: 0.7rem;
+    color: #2a3a2a;
+    font-family: 'IBM Plex Mono', monospace;
+    line-height: 1.6;
+    margin-top: 16px;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 80px 20px;
+    color: #2a4a2a;
+}
+.empty-big {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 2.5rem;
+    margin-bottom: 12px;
+    color: #1a3a1a;
+}
+.empty-msg {
+    font-size: 0.85rem;
+    color: #2a4a2a;
+    font-family: 'IBM Plex Mono', monospace;
+}
+
+/* Hide streamlit chrome */
+#MainMenu, footer, header { visibility: hidden; }
+</style>
+
+""", unsafe_allow_html=True)
+
+# ============================================================
+
+# HELPERS
+
+# ============================================================
+
+def detect_study_type(text):
+    if not text:
+        return "Research Study"
+    t = text.lower()
+    if "meta-analysis" in t: return "Meta-Analysis"
+    if "systematic review" in t: return "Systematic Review"
+    if "randomized" in t: return "RCT"
+    if "double-blind" in t: return "Double-Blind Trial"
+    if "cohort" in t: return "Cohort Study"
+    if "case-control" in t: return "Case-Control"
+    if "cross-sectional" in t: return "Cross-Sectional"
+    if "mouse" in t or "mice" in t or "rat" in t: return "Animal Study"
+    if "in vitro" in t: return "Lab Study"
+    return "Research Study"
+
 
 st.set_page_config(page_title="SciPulse", page_icon="🧬", layout="wide")
 
