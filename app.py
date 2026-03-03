@@ -395,8 +395,8 @@ def main():
             "psychedelic therapy depression",
             "antibiotic resistance",
         ]
-        for t in quick_topics:
-            if st.button(t, use_container_width=True):
+        for i, t in enumerate(quick_topics):
+            if st.button(t, use_container_width=True, key=f"topic_{i}"):
                 st.session_state["query"] = t
         st.markdown("—")
         st.markdown("<div style=\"font-size:0.75rem;color:#4a6a4a;\">Data from Semantic Scholar.<br>Results cached 1 hour.</div>", unsafe_allow_html=True)
