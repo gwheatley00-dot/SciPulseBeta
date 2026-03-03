@@ -382,6 +382,11 @@ def render_stats(papers):
 def main():
     with st.sidebar:
         st.markdown("<div style=\"color:#7eda7e;font-size:1.1rem;font-weight:600;margin-bottom:12px;\">Search Options</div>", unsafe_allow_html=True)
+        # manual search field
+        user_query = st.text_input("Search topics", value=st.session_state.get("manual_query", ""), placeholder="e.g. migraine, probiotics...")
+        if st.button("Go", key="manual_search") and user_query:
+            st.session_state["manual_query"] = user_query
+            st.session_state["query"] = user_query
         result_limit = st.slider("Number of results", min_value=5, max_value=20, value=12, step=5)
         st.markdown("—")
         st.markdown("<div style=\"color:#7eda7e;font-size:1.1rem;font-weight:600;margin-bottom:10px;\">Quick Topics</div>", unsafe_allow_html=True)
