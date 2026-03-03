@@ -1,11 +1,9 @@
+# -*- coding: utf-8 -*-
 import streamlit as st
 import requests
 import re
 from typing import List, Dict
-st.set_page_config(page_title="SciPulse", page_icon=" ", layout="wide")
-# ============================================================
-# STYLES
-# ============================================================
+st.set_page_config(page_title="SciPulse", page_icon="DNA", layout="wide")
 st.markdown("""
 <style>
 body { background-color: #0c140c; }
@@ -26,11 +24,9 @@ border: 1px solid #1e2e1e;
 border-radius: 14px;
 padding: 24px 28px;
 margin-bottom: 18px;
-transition: transform 0.2s ease, border-color 0.2s ease;
 }
 .paper-card:hover {
 border-color: #3a6a3a;
-transform: translateY(-3px);
 }
 .featured-card {
 background: linear-gradient(135deg, #0f2a1a 0%, #0a1f2e 100%);
@@ -51,10 +47,9 @@ font-weight: 500;
 }
 .badge-study { background: #2a203a; color: #c9a8ff; }
 .badge-field { background: #1f2e3a; color: #a8d0ff; }
-.badge-year { background: #2a2a2a; color: #ccc; }
+.badge-year { background: #2a2a2a; color: #cccccc; }
 .badge-cite { background: #3a2a2a; color: #ffb3b3; }
 .badge-open { background: #1d3a1d; color: #7eda7e; }
-.badge-new { background: #3a3a1a; color: #e0e07e; }
 .plain-summary {
 background: #0f1d14;
 border: 1px solid #244a2c;
@@ -77,12 +72,6 @@ font-size: 0.75rem;
 color: #4a6a4a;
 margin-bottom: 6px;
 }
-.no-results {
-text-align: center;
-padding: 60px 20px;
-color: #4a6a4a;
-font-size: 1.1rem;
-}
 .stats-bar {
 background: #0f1a0f;
 border: 1px solid #1e2e1e;
@@ -92,12 +81,18 @@ margin-bottom: 20px;
 font-size: 0.82rem;
 color: #6a8a6a;
 }
+.no-results {
+text-align: center;
+padding: 60px 20px;
+color: #4a6a4a;
+font-size: 1.1rem;
+}
 </style>
 """, unsafe_allow_html=True)
 # ============================================================
 # HELPERS
 # ============================================================
-def detect_study_type(text: str) -> str:
+def detect_study_type(text):
 if not text:
 return "Research Study"
 t = text.lower()
@@ -120,17 +115,20 @@ return "Animal Study"
 if "in vitro" in t:
 return "Laboratory Study"
 return "Research Study"
-def extract_sample_size(text: str):
+def extract_sample_size(text):
 if not text:
 return None
-match = re.search(r'(\d{2,5})\s+(participants|patients|subjects)', text.lower())
+match = re.search(r"(\d{2,5})\s+(participants|patients|subjects)", text.lower())
 return match.group(1) if match else None
-def extract_finding_sentences(abstract: str):
+def extract_finding_sentences(abstract):
 if not abstract:
 return None
-sentences = re.split(r'(?<=[.!?])\s+', abstract)
-keywords = ["found", "result", "associated", "significant", "increase", "decrease",
-"suggest", "indicate", "demonstrate", "conclude", "show", "reveal"]
+sentences = re.split(r"(?<=[.!?])\s+", abstract)
+keywords = [
+"found", "result", "associated", "significant",
+"increase", "decrease", "suggest", "indicate",
+"demonstrate", "conclude", "show", "reveal"
+]
 scored = []
 for s in sentences:
 score = sum(k in s.lower() for k in keywords)
@@ -138,7 +136,7 @@ scored.append((score, s))
 scored.sort(reverse=True)
 top = [s for score, s in scored[:2] if score > 0]
 return " ".join(top) if top else None
-def generate_plain_summary(paper: dict) -> str:
+def generate_plain_summary(paper):
 abstract = paper.get("abstract", "")
 title = paper.get("title", "")
 study_type = detect_study_type(abstract)
@@ -146,41 +144,40 @@ findings = extract_finding_sentences(abstract)
 sample_size = extract_sample_size(abstract)
 if not findings:
 findings = "Key findings were reported in the study, though detailed outcome extracti
-strength_note = ""
 if study_type == "Animal Study":
-strength_note = " elif study_type == "Meta-Analysis":
-strength_note = " elif study_type == "Systematic Review":
-strength_note = " elif "Randomized" in study_type:
-strength_note = " elif "Double-Blind" in study_type:
-strength_note = " Findings are preliminary and may not directly generalize to human
-Aggregates multiple studies, increasing overall evidence strength
-Comprehensive review of existing literature on the topic."
-Controlled trial design supports stronger causal interpretation."
-Double-blind design minimizes observer and participant bias."
+strength_note = "Preliminary findings - may not directly generalize to humans."
+elif study_type == "Meta-Analysis":
+strength_note = "Aggregates multiple studies, increasing overall evidence strength."
+elif study_type == "Systematic Review":
+strength_note = "Comprehensive review of existing literature on the topic."
+elif "Randomized" in study_type:
+strength_note = "Controlled trial design supports stronger causal interpretation."
+elif "Double-Blind" in study_type:
+strength_note = "Double-blind design minimizes observer and participant bias."
 elif study_type == "Laboratory Study":
-strength_note = " In vitro results may not replicate in living organisms."
+strength_note = "In vitro results may not replicate in living organisms."
 else:
-strength_note = " Observational design — interpret causality with care."
+strength_note = "Observational design - interpret causality with care."
 sample_line = (
-f"Approximately {sample_size} participants were included."
+"Approximately " + sample_size + " participants were included."
 if sample_size
 else "Sample size not clearly stated in the abstract."
 )
-return f"""
-<div class="plain-summary">
-<h4>What They Studied</h4>
-<p>This {study_type.lower()} investigated the research question addressed in:
-<strong>{title}</strong>.</p>
-<h4>What They Found</h4>
-<p>{findings}</p>
-<h4>Study Strength</h4>
-<p>{sample_line} Design classified as <strong>{study_type}</strong>. {strength_note}<
-<h4>Practical Takeaway</h4>
-<p>These findings contribute to the evolving evidence base in this field.
-Always consult a qualified professional before acting on research findings.</p>
-</div>
-"""
-def rank_papers(papers: List[Dict]) -> List[Dict]:
+return (
+"<div class=\"plain-summary\">"
+"<h4>What They Studied</h4>"
+"<p>This " + study_type.lower() + " investigated the research question addressed in:
+"<strong>" + title + "</strong>.</p>"
+"<h4>What They Found</h4>"
+"<p>" + findings + "</p>"
+"<h4>Study Strength</h4>"
+"<p>" + sample_line + " Design classified as <strong>" + study_type + "</strong>. " +
+"<h4>Practical Takeaway</h4>"
+"<p>These findings contribute to the evolving evidence base in this field. "
+"Always consult a qualified professional before acting on research findings.</p>"
+"</div>"
+)
+def rank_papers(papers):
 def score(p):
 return (
 p.get("citationCount", 0) * 2
@@ -192,7 +189,7 @@ return sorted(papers, key=score, reverse=True)
 # API
 # ============================================================
 @st.cache_data(ttl=60 * 60)
-def fetch_papers(query: str, limit: int = 15) -> List[Dict]:
+def fetch_papers(query, limit=15):
 fields = (
 "title,abstract,authors,year,url,fieldsOfStudy,"
 "citationCount,isOpenAccess,publicationDate,journal"
@@ -214,46 +211,46 @@ return []
 # ============================================================
 # UI COMPONENTS
 # ============================================================
-def make_badges(paper: dict) -> str:
+def make_badges(paper):
 study_type = detect_study_type(paper.get("abstract", ""))
 year = paper.get("year")
 citations = paper.get("citationCount")
 is_open = paper.get("isOpenAccess", False)
 fields = paper.get("fieldsOfStudy") or []
-html = '<div class="badge-row">'
-html += f'<span class="badge badge-study">{study_type}</span>'
+html = "<div class=\"badge-row\">"
+html += "<span class=\"badge badge-study\">" + study_type + "</span>"
 for field in fields[:2]:
-html += f'<span class="badge badge-field">{field}</span>'
+html += "<span class=\"badge badge-field\">" + field + "</span>"
 if year:
-html += f'<span class="badge badge-year">{year}</span>'
+html += "<span class=\"badge badge-year\">" + str(year) + "</span>"
 if citations is not None:
-html += f'<span class="badge badge-cite">★ {citations:,} citations</span>'
+html += "<span class=\"badge badge-cite\">* " + str(citations) + " citations</span>"
 if is_open:
-html += '<span class="badge badge-open">Open Access</span>'
-html += '</div>'
+html += "<span class=\"badge badge-open\">Open Access</span>"
+html += "</div>"
 return html
-def render_paper(paper: dict, featured: bool = False):
+def render_paper(paper, featured=False):
 container_class = "featured-card" if featured else "paper-card"
-st.markdown(f'<div class="{container_class}">', unsafe_allow_html=True)
+st.markdown("<div class=\"" + container_class + "\">", unsafe_allow_html=True)
 journal = (paper.get("journal") or {}).get("name")
 if journal:
 st.markdown(
-f'<div class="journal-line"> Published in <em>{journal}</em></div>',
+"<div class=\"journal-line\">Published in <em>" + journal + "</em></div>",
 unsafe_allow_html=True,
 )
-else:
 title = paper.get("title", "Untitled")
 if featured:
-st.markdown(f"## {title}")
-st.markdown(f"### {title}")
+st.markdown("## " + title)
+else:
+st.markdown("### " + title)
 st.markdown(make_badges(paper), unsafe_allow_html=True)
 authors = paper.get("authors") or []
 if authors:
 author_names = ", ".join(a.get("name", "") for a in authors[:4])
 if len(authors) > 4:
-author_names += f" +{len(authors) - 4} more"
+author_names += " +" + str(len(authors) - 4) + " more"
 st.markdown(
-f'<div class="journal-line"> {author_names}</div>',
+"<div class=\"journal-line\">Authors: " + author_names + "</div>",
 unsafe_allow_html=True,
 )
 st.markdown(generate_plain_summary(paper), unsafe_allow_html=True)
@@ -264,9 +261,9 @@ with st.expander("Full Abstract"):
 st.write(paper.get("abstract"))
 with col2:
 if paper.get("url"):
-st.markdown(f"[→ Read Full Paper]({paper.get('url')})")
+st.markdown("[Read Full Paper](" + paper.get("url") + ")")
 st.markdown("</div>", unsafe_allow_html=True)
-def render_stats_bar(papers: List[Dict]):
+def render_stats_bar(papers):
 total = len(papers)
 open_access = sum(1 for p in papers if p.get("isOpenAccess"))
 recent = sum(1 for p in papers if (p.get("publicationDate") or "") >= "2024-01-01")
@@ -275,12 +272,12 @@ int(sum(p.get("citationCount", 0) for p in papers) / total)
 if total else 0
 )
 st.markdown(
-f'<div class="stats-bar">'
-f' <strong>{total}</strong> papers found &nbsp;|&nbsp; '
-f' <strong>{open_access}</strong> open access &nbsp;|&nbsp; '
-f' <strong>{recent}</strong> from 2024+ &nbsp;|&nbsp; '
-f'★ avg <strong>{avg_cite:,}</strong> citations'
-f'</div>',
+"<div class=\"stats-bar\">"
+"<strong>" + str(total) + "</strong> papers found &nbsp;|&nbsp; "
+"<strong>" + str(open_access) + "</strong> open access &nbsp;|&nbsp; "
+"<strong>" + str(recent) + "</strong> from 2024+ &nbsp;|&nbsp; "
+"avg <strong>" + str(avg_cite) + "</strong> citations"
+"</div>",
 unsafe_allow_html=True,
 )
 # ============================================================
@@ -306,7 +303,7 @@ if st.button(topic, use_container_width=True):
 st.session_state["quick_query"] = topic
 st.markdown("---")
 st.markdown(
-'<div style="font-size:0.75rem;color:#4a6a4a;">'
+"<div style=\"font-size:0.75rem;color:#4a6a4a;\">"
 "Data sourced from Semantic Scholar.<br>"
 "Results cached for 1 hour."
 "</div>",
@@ -315,12 +312,11 @@ unsafe_allow_html=True,
 # ============================================================
 # MAIN APP
 # ============================================================
-st.markdown('<div class="main-title"> SciPulse</div>', unsafe_allow_html=True)
+st.markdown("<div class=\"main-title\">SciPulse</div>", unsafe_allow_html=True)
 st.markdown(
-'<div class="subtitle">Evidence-first summaries of peer-reviewed research. No hype. No pa
+"<div class=\"subtitle\">Evidence-first summaries of peer-reviewed research. No hype. No
 unsafe_allow_html=True,
 )
-# Handle quick-topic button clicks from sidebar
 default_query = st.session_state.pop("quick_query", "")
 query = st.text_input(
 "Search research topics",
@@ -341,17 +337,17 @@ for p in papers[1:]:
 render_paper(p)
 else:
 st.markdown(
-'<div class="no-results">'
-" No results found for that query.<br>"
+"<div class=\"no-results\">"
+"No results found for that query.<br>"
 "<small>Try broader terms or check your spelling.</small>"
 "</div>",
 unsafe_allow_html=True,
 )
 else:
 st.markdown(
-'<div class="no-results">'
-" Enter a research topic above to get started.<br>"
+"<div class=\"no-results\">"
+"Enter a research topic above to get started.<br>"
 "<small>Or pick a quick topic from the sidebar.</small>"
-)
 "</div>",
 unsafe_allow_html=True,
+)
