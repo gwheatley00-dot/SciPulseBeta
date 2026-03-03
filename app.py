@@ -3,7 +3,7 @@ import requests
 import re
 from typing import List, Dict
 
-st.set_page_config(page_title=“SciPulse”, page_icon=“🧬”, layout=“wide”)
+st.set_page_config(page_title="SciPulse", page_icon="🧬", layout="wide")
 
 # ============================================================
 
