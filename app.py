@@ -967,6 +967,11 @@ def render_results(query, result_limit, use_ai):
     with st.spinner(""):
         papers = search_papers(query, limit=result_limit)
     if not papers:
+        st.markdown(
+            "<div class=\"empty-state\"><div class=\"empty-big\">[ ]</div>"
+            "<div class=\"empty-msg\">no results found. try broader search terms.</div></div>",
+            unsafe_allow_html=True
+        )
         return
     for p in papers:
         p["_score"] = compute_score(p)
@@ -986,6 +991,7 @@ def render_results(query, result_limit, use_ai):
 def main():
     if "page" not in st.session_state:
         st.session_state["page"] = "home"
+    # sidebar header
     with st.sidebar:
         st.markdown("<div class=\"sidebar-label\" style=\"margin-top:0;\">SciPulse</div>", unsafe_allow_html=True)
         st.markdown("<div style=\"font-family:'IBM Plex Mono',monospace;font-size:0.75rem;color:#3a6a3a;margin-bottom:20px;\">research discovery</div>", unsafe_allow_html=True)
@@ -993,12 +999,28 @@ def main():
             st.session_state["page"] = "home"
             st.session_state.pop("query", None)
             st.rerun()
-        user_query = st.text_input("Search topics", value=st.session_state.get("manual_query", ""), placeholder="e.g. migraine, probiotics...")
-        if st.button("Search", key="manual_search") and user_query:
-            st.session_state["manual_query"] = user_query
-            st.session_state["query"] = user_query
-            st.session_state["page"] = "results"
-            st.rerun()
+
+        # toggleable search bar support
+        if "show_search" not in st.session_state:
+            st.session_state["show_search"] = True
+
+        if st.session_state["show_search"]:
+            user_query = st.text_input("Search topics", value=st.session_state.get("manual_query", ""), placeholder="e.g. migraine, probiotics...")
+            cols = st.columns([3,1])
+            with cols[1]:
+                if st.button("Hide", key="hide_search"):
+                    st.session_state["show_search"] = False
+                    st.rerun()
+            if st.button("Search", key="manual_search") and user_query:
+                st.session_state["manual_query"] = user_query
+                st.session_state["query"] = user_query
+                st.session_state["page"] = "results"
+                st.rerun()
+        else:
+            if st.button("Show search", key="show_search"):
+                st.session_state["show_search"] = True
+                st.rerun()
+
         result_limit = st.slider("Results", min_value=5, max_value=20, value=10, step=5)
         use_ai = st.toggle("AI Summaries", value=True)
         st.markdown("<div class=\"sidebar-label\">Quick Topics</div>", unsafe_allow_html=True)
