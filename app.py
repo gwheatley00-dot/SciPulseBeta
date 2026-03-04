@@ -843,10 +843,6 @@ def render_home(use_ai):
                 "</div>",
                 unsafe_allow_html=True
             )
-        if st.button("Explore", key="disc_" + str(i), use_container_width=True):
-            st.session_state["query"] = d.get("query","")
-            st.session_state["page"] = "results"
-            st.rerun()
     st.markdown("<div class=\"home-section-label\" style=\"margin-top:1.5rem;\">Browse fields</div>", unsafe_allow_html=True)
     f_cols = st.columns(5)
     for i, (label, q) in enumerate(FIELDS):
@@ -855,6 +851,12 @@ def render_home(use_ai):
                 st.session_state["query"] = q
                 st.session_state["page"] = "results"
                 st.rerun()
+    # single explore button at very bottom of home page
+    if st.button("Explore"):
+        target = st.session_state.get("manual_query") or "science"
+        st.session_state["query"] = target
+        st.session_state["page"] = "results"
+        st.rerun()
 
 # ============================================================
 # RESULTS PAGE
@@ -1000,26 +1002,6 @@ def main():
             st.session_state.pop("query", None)
             st.rerun()
 
-        # toggleable search bar support
-        if "show_search" not in st.session_state:
-            st.session_state["show_search"] = True
-
-        if st.session_state["show_search"]:
-            user_query = st.text_input("Search topics", value=st.session_state.get("manual_query", ""), placeholder="e.g. migraine, probiotics...")
-            cols = st.columns([3,1])
-            with cols[1]:
-                if st.button("Hide", key="hide_search"):
-                    st.session_state["show_search"] = False
-                    st.rerun()
-            if st.button("Search", key="manual_search") and user_query:
-                st.session_state["manual_query"] = user_query
-                st.session_state["query"] = user_query
-                st.session_state["page"] = "results"
-                st.rerun()
-        else:
-            if st.button("Show search", key="show_search"):
-                st.session_state["show_search"] = True
-                st.rerun()
 
         result_limit = st.slider("Results", min_value=5, max_value=20, value=10, step=5)
         use_ai = st.toggle("AI Summaries", value=True)
@@ -1044,6 +1026,16 @@ def main():
 
     st.markdown("<div class=\"wordmark\">Sci<span>Pulse</span></div>", unsafe_allow_html=True)
     st.markdown("<div class=\"tagline\">evidence-first research summaries / no hype / no paywall</div>", unsafe_allow_html=True)
+
+    # top-centered search bar
+    search_cols = st.columns([2,6,2])
+    with search_cols[1]:
+        user_query = st.text_input("Search topics", value=st.session_state.get("manual_query", ""), placeholder="e.g. migraine, probiotics...")
+        if st.button("Search", key="top_search") and user_query:
+            st.session_state["manual_query"] = user_query
+            st.session_state["query"] = user_query
+            st.session_state["page"] = "results"
+            st.rerun()
 
     page = st.session_state.get("page", "home")
     query = st.session_state.get("query", "")
