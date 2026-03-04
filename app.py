@@ -5,13 +5,12 @@ import time
 import json
 from typing import List, Dict, Any
 
-st.set_page_config(page_title="SciPulse", page_icon="🧬", layout="wide")
+st.set_page_config(page_title="SciPulse", page_icon="DNA", layout="wide")
 
 API_SEARCH = "https://api.semanticscholar.org/graph/v1/paper/search"
 CLAUDE_API = "https://api.anthropic.com/v1/messages"
 
 st.markdown("""
-
 <style>
 @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600&display=swap');
 
@@ -88,6 +87,7 @@ st.markdown("""
     border-color: #5a9a5a;
 }
 
+/* ── WORDMARK ── */
 .wordmark {
     font-family: 'IBM Plex Mono', monospace;
     font-size: 1.6rem;
@@ -102,9 +102,228 @@ st.markdown("""
     color: #3a5a3a;
     font-family: 'IBM Plex Mono', monospace;
     letter-spacing: 0.04em;
-    margin-bottom: 2rem;
+    margin-bottom: 1.5rem;
 }
 
+/* ── HOME PAGE ── */
+.home-nav {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 2rem;
+    border-bottom: 1px solid #162016;
+    padding-bottom: 12px;
+}
+.nav-pill {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.72rem;
+    color: #3a6a3a;
+    border: 1px solid #1a3a1a;
+    border-radius: 20px;
+    padding: 4px 14px;
+    cursor: pointer;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    background: transparent;
+}
+.nav-pill.active {
+    color: #7eda7e;
+    border-color: #3a7a3a;
+    background: #0f2a0f;
+}
+.ticker-bar {
+    background: #060d06;
+    border: 1px solid #162016;
+    border-radius: 8px;
+    padding: 10px 16px;
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    overflow: hidden;
+}
+.ticker-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.6rem;
+    color: #7eda7e;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    white-space: nowrap;
+    background: #0f2a0f;
+    border: 1px solid #2a5a2a;
+    border-radius: 3px;
+    padding: 2px 7px;
+}
+.ticker-text {
+    font-size: 0.8rem;
+    color: #4a7a4a;
+    font-family: 'IBM Plex Mono', monospace;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.hero-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 12px;
+    margin-bottom: 1.5rem;
+}
+.hero-main {
+    background: linear-gradient(160deg, #0a1f0a 0%, #080f14 100%);
+    border: 1px solid #1e3e2e;
+    border-radius: 12px;
+    padding: 28px 28px;
+    position: relative;
+    overflow: hidden;
+    cursor: pointer;
+}
+.hero-main::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, #2a6a2a, #7eda7e, #2a6a2a);
+}
+.hero-tag {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.6rem;
+    color: #7eda7e;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    margin-bottom: 10px;
+    border: 1px solid #2a5a2a;
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 3px;
+    background: #0f2a0f;
+}
+.hero-title {
+    font-size: 1.35rem;
+    font-weight: 600;
+    color: #d8ecd8;
+    line-height: 1.4;
+    margin-bottom: 10px;
+}
+.hero-desc {
+    font-size: 0.85rem;
+    color: #5a7a5a;
+    line-height: 1.6;
+    margin-bottom: 14px;
+}
+.hero-meta {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.65rem;
+    color: #3a5a3a;
+}
+.hero-side {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+.side-card {
+    background: #0a130a;
+    border: 1px solid #142014;
+    border-radius: 10px;
+    padding: 16px 18px;
+    cursor: pointer;
+    transition: border-color 0.15s;
+    flex: 1;
+}
+.side-card:hover { border-color: #2a5a2a; }
+.side-tag {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.58rem;
+    color: #4a7a4a;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 6px;
+}
+.side-title {
+    font-size: 0.88rem;
+    font-weight: 500;
+    color: #b8d8b8;
+    line-height: 1.4;
+    margin-bottom: 6px;
+}
+.side-meta {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.6rem;
+    color: #2a4a2a;
+}
+.discovery-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin-bottom: 1.5rem;
+}
+.disc-card {
+    background: #0a130a;
+    border: 1px solid #142014;
+    border-radius: 10px;
+    padding: 16px;
+    cursor: pointer;
+    transition: border-color 0.15s;
+}
+.disc-card:hover { border-color: #2a5a2a; }
+.disc-field {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.58rem;
+    color: #3a6a3a;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 8px;
+}
+.disc-title {
+    font-size: 0.88rem;
+    font-weight: 500;
+    color: #b8d8b8;
+    line-height: 1.4;
+    margin-bottom: 8px;
+}
+.disc-stat {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.68rem;
+    color: #7eda7e;
+    font-weight: 500;
+}
+.disc-sub {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.6rem;
+    color: #2a4a2a;
+}
+.field-row {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 1.5rem;
+}
+.field-chip {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.7rem;
+    color: #4a7a4a;
+    border: 1px solid #1a3a1a;
+    border-radius: 20px;
+    padding: 5px 14px;
+    cursor: pointer;
+    transition: all 0.15s;
+    background: transparent;
+}
+.field-chip:hover {
+    border-color: #3a7a3a;
+    color: #7eda7e;
+    background: #0a1a0a;
+}
+.home-section-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.65rem;
+    color: #3a6a3a;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    margin-bottom: 10px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #162016;
+}
+
+/* ── RESULTS PAGE ── */
 .stats-row {
     display: flex;
     gap: 0;
@@ -163,7 +382,6 @@ st.markdown("""
     height: 2px;
     background: linear-gradient(90deg, #2a6a2a, #7eda7e, #2a6a2a);
 }
-
 .pcard {
     background: #0a130a;
     border: 1px solid #142014;
@@ -173,7 +391,6 @@ st.markdown("""
     transition: border-color 0.15s ease;
 }
 .pcard:hover { border-color: #2a4a2a; }
-
 .card-journal {
     font-family: 'IBM Plex Mono', monospace;
     font-size: 0.68rem;
@@ -246,11 +463,9 @@ st.markdown("""
     line-height: 1.55;
 }
 .sum-val strong { color: #b8d8b8; }
-
 .finding-bar {
     background: #080f08;
-    border: 1px solid #142014;
-    border-top: none;
+    border-top: 1px solid #142014;
     padding: 14px 16px;
 }
 .finding-label {
@@ -278,7 +493,35 @@ st.markdown("""
     vertical-align: middle;
     letter-spacing: 0.05em;
 }
-
+.limit-bar {
+    padding: 8px 16px 10px;
+    background: #080f08;
+    border-top: 1px solid #142014;
+}
+.limit-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.6rem;
+    color: #5a3a3a;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+}
+.limit-text { font-size: 0.8rem; color: #7a5a5a; }
+/* ── ABSTRACT FIX - full width ── */
+.abstract-wrap {
+    margin-top: 10px;
+    width: 100%;
+}
+.abstract-inner {
+    font-size: 0.84rem;
+    color: #6a8a6a;
+    line-height: 1.7;
+    font-family: 'DM Sans', sans-serif;
+    padding: 14px 18px;
+    background: #060d06;
+    border: 1px solid #142014;
+    border-radius: 8px;
+    margin-top: 4px;
+}
 .card-footer {
     display: flex;
     align-items: center;
@@ -296,15 +539,6 @@ st.markdown("""
     transition: color 0.15s;
 }
 .read-btn:hover { color: #7eda7e; }
-
-.abstract-inner {
-    font-size: 0.82rem;
-    color: #6a8a6a;
-    line-height: 1.65;
-    padding: 4px 2px;
-    font-family: 'DM Sans', sans-serif;
-}
-
 .sidebar-label {
     font-family: 'IBM Plex Mono', monospace;
     font-size: 0.65rem;
@@ -321,49 +555,53 @@ st.markdown("""
     line-height: 1.6;
     margin-top: 16px;
 }
-
-.empty-state {
-    text-align: center;
-    padding: 80px 20px;
-}
+.empty-state { text-align: center; padding: 80px 20px; }
 .empty-big {
     font-family: 'IBM Plex Mono', monospace;
     font-size: 2.5rem;
     margin-bottom: 12px;
-    color: #1a3a1a;
+    color: #1a3a2a;
 }
 .empty-msg {
     font-size: 0.85rem;
     color: #2a4a2a;
     font-family: 'IBM Plex Mono', monospace;
 }
-
 #MainMenu, footer, header { visibility: hidden; }
 </style>
-
 """, unsafe_allow_html=True)
-
 
 # ============================================================
 # HELPERS
 # ============================================================
 
 def detect_study_type(text):
-    if not text: return "Research Study"
+    if not text:
+        return "Research Study"
     t = text.lower()
-    if "meta-analysis" in t: return "Meta-Analysis"
-    if "systematic review" in t: return "Systematic Review"
-    if "randomized" in t: return "RCT"
-    if "double-blind" in t: return "Double-Blind Trial"
-    if "cohort" in t: return "Cohort Study"
-    if "case-control" in t: return "Case-Control"
-    if "cross-sectional" in t: return "Cross-Sectional"
-    if "mouse" in t or "mice" in t or "rat" in t: return "Animal Study"
-    if "in vitro" in t: return "Lab Study"
+    if "meta-analysis" in t:
+        return "Meta-Analysis"
+    if "systematic review" in t:
+        return "Systematic Review"
+    if "randomized" in t:
+        return "RCT"
+    if "double-blind" in t:
+        return "Double-Blind Trial"
+    if "cohort" in t:
+        return "Cohort Study"
+    if "case-control" in t:
+        return "Case-Control"
+    if "cross-sectional" in t:
+        return "Cross-Sectional"
+    if "mouse" in t or "mice" in t or "rat" in t:
+        return "Animal Study"
+    if "in vitro" in t:
+        return "Lab Study"
     return "Research Study"
 
 def extract_sample_size(text):
-    if not text: return None
+    if not text:
+        return None
     patterns = [
         r"n\s*=\s*(\d{2,6})",
         r"(\d{2,6})\s+(participants|patients|subjects|individuals|adults|children|women|men)",
@@ -378,11 +616,12 @@ def extract_sample_size(text):
     return None
 
 def extract_outcomes(abstract):
-    if not abstract: return []
+    if not abstract:
+        return []
     sentences = re.split(r"(?<=[.!?])\s+", abstract)
     keywords = ["found", "result", "associated", "significant", "increase", "decrease",
                 "suggest", "indicate", "demonstrate", "conclude", "show", "reveal",
-                "effect", "outcome", "improvement", "reduction", "increase", "risk",
+                "effect", "outcome", "improvement", "reduction", "risk",
                 "benefit", "efficacy", "effective", "compared", "versus", "higher", "lower"]
     scored = []
     for s in sentences:
@@ -408,17 +647,22 @@ def strength_info(study_type):
     return level, note
 
 def format_authors(authors):
-    if not authors: return "Authors unknown"
+    if not authors:
+        return "Authors unknown"
     names = [a.get("name") for a in authors if a.get("name")]
-    if not names: return "Authors unknown"
+    if not names:
+        return "Authors unknown"
     return ", ".join(names[:3]) + (" et al." if len(names) > 3 else "")
 
 def compute_score(paper):
     score = (paper.get("citationCount") or 0) * 2
-    if paper.get("openAccessPdf"): score += 5
+    if paper.get("openAccessPdf"):
+        score += 5
     try:
-        if paper.get("year") and int(paper["year"]) >= 2024: score += 3
-    except Exception: pass
+        if paper.get("year") and int(paper["year"]) >= 2024:
+            score += 3
+    except Exception:
+        pass
     return score
 
 def make_badges(paper):
@@ -429,10 +673,14 @@ def make_badges(paper):
     is_new = year and int(year) >= 2024
     h = "<div class=\"badges\">"
     h += "<span class=\"b b-type\">" + stype + "</span>"
-    if year: h += "<span class=\"b b-year\">" + str(year) + "</span>"
-    if cites is not None: h += "<span class=\"b b-cite\">" + str(cites) + " cited</span>"
-    if is_open: h += "<span class=\"b b-open\">open access</span>"
-    if is_new: h += "<span class=\"b b-new\">2024+</span>"
+    if year:
+        h += "<span class=\"b b-year\">" + str(year) + "</span>"
+    if cites is not None:
+        h += "<span class=\"b b-cite\">" + str(cites) + " cited</span>"
+    if is_open:
+        h += "<span class=\"b b-open\">open access</span>"
+    if is_new:
+        h += "<span class=\"b b-new\">2024+</span>"
     h += "</div>"
     return h
 
@@ -476,7 +724,7 @@ def get_ai_summary(paper_id, title, abstract, study_type):
     return None
 
 # ============================================================
-# API
+# SEMANTIC SCHOLAR API
 # ============================================================
 
 @st.cache_data(ttl=3600, show_spinner=False)
@@ -495,12 +743,121 @@ def search_papers(query, limit=12):
             resp.raise_for_status()
             return resp.json().get("data", [])
         except requests.RequestException:
-            if attempt == 2: return []
+            if attempt == 2:
+                return []
             time.sleep(3)
     return []
 
+@st.cache_data(ttl=3600, show_spinner=False)
+def fetch_trending(field, limit=3):
+    return search_papers(field + " 2024 2025", limit=limit)
+
 # ============================================================
-# RENDER
+# HOME PAGE
+# ============================================================
+
+FIELDS = [
+    ("Neuroscience", "neuroscience brain"),
+    ("Oncology", "cancer treatment oncology"),
+    ("Immunology", "immunology vaccine immunity"),
+    ("Genomics", "genomics CRISPR gene editing"),
+    ("Microbiome", "gut microbiome bacteria"),
+    ("Climate Health", "climate change health"),
+    ("Mental Health", "mental health depression anxiety"),
+    ("Longevity", "aging longevity lifespan"),
+    ("Pharmacology", "drug therapy pharmacology"),
+    ("Neurology", "neurological disease alzheimer"),
+]
+
+BREAKING = [
+    {
+        "tag": "Breaking",
+        "title": "CRISPR Therapies Enter New Phase of Clinical Trials",
+        "desc": "Multiple gene-editing therapies have reached Phase III trials in 2024-2025, marking a major milestone in medical research.",
+        "meta": "Genomics / 2025",
+        "query": "CRISPR clinical trial 2024 2025"
+    },
+    {
+        "tag": "Discovery",
+        "title": "GLP-1 Agonists Show Broad Cardiometabolic Benefits Beyond Weight Loss",
+        "desc": "New research confirms GLP-1 receptor agonists reduce cardiovascular events in addition to improving weight-related outcomes.",
+        "meta": "Pharmacology / 2024",
+        "query": "GLP-1 agonist cardiovascular benefit"
+    },
+]
+
+DISCOVERIES = [
+    {"field": "Neuroscience", "title": "Sleep clears Alzheimer proteins via glymphatic system", "stat": "", "sub": "", "query": ""},
+    {"field": "Immunology", "title": "Trained immunity offers long-term protection beyond vaccination", "stat": "", "sub": "", "query": ""},
+    {"field": "Microbiome", "title": "Gut-brain axis drives anxiety and mood disorder pathways", "stat": "", "sub": "", "query": ""},
+    {"field": "Longevity", "title": "Rapamycin extends healthspan in multiple mammalian models", "stat": "", "sub": "", "query": ""},
+    {"field": "Oncology", "title": "CAR-T cell therapy achieves remission in solid tumor patients", "stat": "", "sub": "", "query": ""},
+    {"field": "Climate Health", "title": "Extreme heat linked to cognitive decline and preterm birth", "stat": "", "sub": "", "query": ""},
+]
+
+
+def render_home(use_ai):
+    st.markdown("<div class=\"ticker-bar\"><span class=\"ticker-label\">live</span><span class=\"ticker-text\">Breaking science updates...</span></div>", unsafe_allow_html=True)
+    st.markdown("<div class=\"home-section-label\">Breaking Research</div>", unsafe_allow_html=True)
+    st.markdown("<div class=\"hero-grid\">", unsafe_allow_html=True)
+    cols = st.columns([2, 1])
+    with cols[0]:
+        b = BREAKING[0]
+        st.markdown(
+            "<div class=\"hero-main\">" 
+            "<div class=\"hero-tag\">" + b["tag"] + "</div>" 
+            "<div class=\"hero-title\">" + b["title"] + "</div>" 
+            "<div class=\"hero-desc\">" + b["desc"] + "</div>" 
+            "<div class=\"hero-meta\">" + b["meta"] + "</div>" 
+            "</div>",
+            unsafe_allow_html=True
+        )
+        if st.button("Search this topic", key="breaking_0"):
+            st.session_state["query"] = b["query"]
+            st.session_state["page"] = "results"
+            st.rerun()
+    with cols[1]:
+        b = BREAKING[1]
+        st.markdown(
+            "<div class=\"side-card\">" 
+            "<div class=\"side-tag\">" + b["tag"] + "</div>" 
+            "<div class=\"side-title\">" + b["title"] + "</div>" 
+            "<div class=\"side-meta\">" + b["meta"] + "</div>" 
+            "</div>",
+            unsafe_allow_html=True
+        )
+        if st.button("Search this topic", key="breaking_1"):
+            st.session_state["query"] = b["query"]
+            st.session_state["page"] = "results"
+            st.rerun()
+    st.markdown("<div class=\"home-section-label\" style=\"margin-top:1.5rem;\">Key Discoveries</div>", unsafe_allow_html=True)
+    d_cols = st.columns(3)
+    for i, d in enumerate(DISCOVERIES):
+        with d_cols[i % 3]:
+            st.markdown(
+                "<div class=\"disc-card\">" 
+                "<div class=\"disc-field\">" + d["field"] + "</div>" 
+                "<div class=\"disc-title\">" + d["title"] + "</div>" 
+                "<div class=\"disc-stat\">" + d.get("stat","") + "</div>" 
+                "<div class=\"disc-sub\">" + d.get("sub","") + "</div>" 
+                "</div>",
+                unsafe_allow_html=True
+            )
+        if st.button("Explore", key="disc_" + str(i), use_container_width=True):
+            st.session_state["query"] = d.get("query","")
+            st.session_state["page"] = "results"
+            st.rerun()
+    st.markdown("<div class=\"home-section-label\" style=\"margin-top:1.5rem;\">Browse fields</div>", unsafe_allow_html=True)
+    f_cols = st.columns(5)
+    for i, (label, q) in enumerate(FIELDS):
+        with f_cols[i % 5]:
+            if st.button(label, key="field_" + str(i), use_container_width=True):
+                st.session_state["query"] = q
+                st.session_state["page"] = "results"
+                st.rerun()
+
+# ============================================================
+# RESULTS PAGE
 # ============================================================
 
 def make_summary_block(paper, use_ai=True):
@@ -527,58 +884,31 @@ def make_summary_block(paper, use_ai=True):
         what = "Investigated: " + title
         finding = " ".join(outcomes) if outcomes else "See full abstract for detailed findings."
         practical = "Results contribute to the evidence base in this field."
-        limitation = strength_txt
+        limitation = ""
         ai_label = ""
 
+    level_color = {"HIGH": "4a9a4a", "STRONG": "7a9a4a", "MODERATE": "9a8a4a"}.get(level, "8a6a4a")
     html = (
         "<div class=\"sumbox\">"
         "<div class=\"sum-grid\">"
-
-        "<div class=\"sum-cell\">"
-        "<div class=\"sum-key\">What They Studied</div>"
-        "<div class=\"sum-val\">" + what + "</div>"
+        "<div class=\"sum-cell\"><div class=\"sum-key\">What They Studied</div><div class=\"sum-val\">" + what + "</div></div>"
+        "<div class=\"sum-cell\"><div class=\"sum-key\">Sample Size</div><div class=\"sum-val\">" + sample_txt + "</div></div>"
+        "<div class=\"sum-cell\"><div class=\"sum-key\">Practical Meaning</div><div class=\"sum-val\">" + practical + "</div></div>"
+        "<div class=\"sum-cell\"><div class=\"sum-key\">Evidence Level &nbsp;<strong style=\"color:#" + level_color + ";\">" + level + "</strong></div><div class=\"sum-val\">" + strength_txt + "</div></div>"
         "</div>"
-
-        "<div class=\"sum-cell\">"
-        "<div class=\"sum-key\">Sample Size</div>"
-        "<div class=\"sum-val\">" + sample_txt + "</div>"
-        "</div>"
-
-        "<div class=\"sum-cell\">"
-        "<div class=\"sum-key\">Practical Meaning</div>"
-        "<div class=\"sum-val\">" + practical + "</div>"
-        "</div>"
-
-        "<div class=\"sum-cell\">"
-        "<div class=\"sum-key\">Evidence Level &nbsp;<strong style=\"color:#" +
-        ("4a9a4a\">HIGH" if level == "HIGH" else
-         "7a9a4a\">STRONG" if level == "STRONG" else
-         "9a8a4a\">MODERATE" if level == "MODERATE" else
-         "8a6a4a\">PRELIMINARY") +
-        "</strong></div>"
-        "<div class=\"sum-val\">" + strength_txt + "</div>"
-        "</div>"
-
-        "</div>"
-
         "<div class=\"finding-bar\">"
         "<div class=\"finding-label\">Key Finding " + ai_label + "</div>"
         "<div class=\"finding-text\">" + finding + "</div>"
         "</div>"
-
-        "</div>"
     )
-
     if ai_data and limitation:
         html += (
-            "<div style=\"padding:8px 16px 10px;background:#080f08;border:1px solid #142014;"
-            "border-top:none;border-radius:0 0 8px 8px;\">"
-            "<span style=\"font-family:'IBM Plex Mono',monospace;font-size:0.6rem;color:#5a3a3a;"
-            "text-transform:uppercase;letter-spacing:0.1em;\">Limitation: </span>"
-            "<span style=\"font-size:0.8rem;color:#7a5a5a;\">" + limitation + "</span>"
+            "<div class=\"limit-bar\">"
+            "<span class=\"limit-label\">Limitation: </span>"
+            "<span class=\"limit-text\">" + limitation + "</span>"
             "</div>"
         )
-
+    html += "</div>"
     return html
 
 def render_card(paper, featured=False, use_ai=True):
@@ -587,9 +917,9 @@ def render_card(paper, featured=False, use_ai=True):
     journal = (paper.get("journal") or {}).get("name", "")
     url = paper.get("url", "")
     abstract = paper.get("abstract", "")
-    card_class = "featured" if featured else "pcard"
+    card_cls = "featured" if featured else "pcard"
 
-    st.markdown("<div class=\"" + card_class + "\">", unsafe_allow_html=True)
+    st.markdown("<div class=\"" + card_cls + "\">", unsafe_allow_html=True)
     if journal:
         st.markdown("<div class=\"card-journal\">" + journal + "</div>", unsafe_allow_html=True)
     st.markdown("<div class=\"card-title\">" + title + "</div>", unsafe_allow_html=True)
@@ -597,15 +927,19 @@ def render_card(paper, featured=False, use_ai=True):
     st.markdown(make_badges(paper), unsafe_allow_html=True)
     st.markdown(make_summary_block(paper, use_ai=use_ai), unsafe_allow_html=True)
 
-    col1, col2 = st.columns([1, 5])
-    with col1:
-        if abstract:
-            with st.expander("abstract"):
-                st.markdown("<div class=\"abstract-inner\">" + abstract + "</div>", unsafe_allow_html=True)
-    with col2:
-        if url:
+    # Footer: link left-aligned
+    if url:
+        st.markdown(
+            "<div class=\"card-footer\">"
+            "<a class=\"read-btn\" href=\"" + url + "\" target=\"_blank\">[read full paper]</a>"
+            "</div>",
+            unsafe_allow_html=True
+        )
+    # Abstract: full width expander below everything
+    if abstract:
+        with st.expander("abstract"):
             st.markdown(
-                "<div style=\"padding-top:6px;\"><a class=\"read-btn\" href=\"" + url + "\" target=\"_blank\">[read full paper]</a></div>",
+                "<div class=\"abstract-inner\">" + abstract + "</div>",
                 unsafe_allow_html=True
             )
     st.markdown("</div>", unsafe_allow_html=True)
@@ -625,24 +959,48 @@ def render_stats(papers):
         unsafe_allow_html=True
     )
 
+def render_results(query, result_limit, use_ai):
+    st.markdown(
+        "<div style=\"font-family:'IBM Plex Mono',monospace;font-size:0.72rem;color:#3a6a3a; margin-bottom:1.2rem;\">results for: <strong style=\"color:#7eda7e;\">" + query + "</strong> &nbsp;<span style=\"color:#2a4a2a;\">/ <a href=\"#\" style=\"color:#3a6a3a;text-decoration:none;\" onclick=\"window.location.reload();\">home</a></span></div>",
+        unsafe_allow_html=True
+    )
+    with st.spinner(""):
+        papers = search_papers(query, limit=result_limit)
+    if not papers:
+        return
+    for p in papers:
+        p["_score"] = compute_score(p)
+    papers.sort(key=lambda x: x["_score"], reverse=True)
+    render_stats(papers)
+    st.markdown("<div class=\"section-label\">top result</div>", unsafe_allow_html=True)
+    render_card(papers[0], featured=True, use_ai=use_ai)
+    if len(papers) > 1:
+        st.markdown("<div class=\"section-label\" style=\"margin-top:24px;\">more results</div>", unsafe_allow_html=True)
+        for p in papers[1:]:
+            render_card(p, use_ai=use_ai)
+
 # ============================================================
 # MAIN
 # ============================================================
 
 def main():
+    if "page" not in st.session_state:
+        st.session_state["page"] = "home"
     with st.sidebar:
         st.markdown("<div class=\"sidebar-label\" style=\"margin-top:0;\">SciPulse</div>", unsafe_allow_html=True)
         st.markdown("<div style=\"font-family:'IBM Plex Mono',monospace;font-size:0.75rem;color:#3a6a3a;margin-bottom:20px;\">research discovery</div>", unsafe_allow_html=True)
-
+        if st.button("Home", key="nav_home", use_container_width=True):
+            st.session_state["page"] = "home"
+            st.session_state.pop("query", None)
+            st.rerun()
         user_query = st.text_input("Search topics", value=st.session_state.get("manual_query", ""), placeholder="e.g. migraine, probiotics...")
         if st.button("Search", key="manual_search") and user_query:
             st.session_state["manual_query"] = user_query
             st.session_state["query"] = user_query
-
+            st.session_state["page"] = "results"
+            st.rerun()
         result_limit = st.slider("Results", min_value=5, max_value=20, value=10, step=5)
-
-        use_ai = st.toggle("AI Summaries", value=True, help="Use Claude to generate intelligent summaries from abstracts")
-
+        use_ai = st.toggle("AI Summaries", value=True)
         st.markdown("<div class=\"sidebar-label\">Quick Topics</div>", unsafe_allow_html=True)
         quick_topics = [
             "gut microbiome mental health",
@@ -657,44 +1015,20 @@ def main():
         for i, t in enumerate(quick_topics):
             if st.button(t, use_container_width=True, key="topic_" + str(i)):
                 st.session_state["query"] = t
+                st.session_state["page"] = "results"
+                st.rerun()
 
         st.markdown("<div class=\"sidebar-note\">Semantic Scholar API<br>AI summaries by Claude<br>Cached 1hr per query</div>", unsafe_allow_html=True)
 
     st.markdown("<div class=\"wordmark\">Sci<span>Pulse</span></div>", unsafe_allow_html=True)
     st.markdown("<div class=\"tagline\">evidence-first research summaries / no hype / no paywall</div>", unsafe_allow_html=True)
 
-    current_query = st.session_state.get("query", "")
-
-    if current_query:
-        with st.spinner(""):
-            papers = search_papers(current_query, limit=result_limit)
-
-        if papers:
-            for p in papers:
-                p["_score"] = compute_score(p)
-            papers.sort(key=lambda x: x["_score"], reverse=True)
-
-            render_stats(papers)
-
-            st.markdown("<div class=\"section-label\">top result</div>", unsafe_allow_html=True)
-            render_card(papers[0], featured=True, use_ai=use_ai)
-
-            if len(papers) > 1:
-                st.markdown("<div class=\"section-label\" style=\"margin-top:24px;\">more results</div>", unsafe_allow_html=True)
-                for p in papers[1:]:
-                    render_card(p, use_ai=use_ai)
-        else:
-            st.markdown(
-                "<div class=\"empty-state\"><div class=\"empty-big\">[ ]</div>"
-                "<div class=\"empty-msg\">no results found. try broader search terms.</div></div>",
-                unsafe_allow_html=True
-            )
+    page = st.session_state.get("page", "home")
+    query = st.session_state.get("query", "")
+    if page == "results" and query:
+        render_results(query, result_limit, use_ai)
     else:
-        st.markdown(
-            "<div class=\"empty-state\"><div class=\"empty-big\">_</div>"
-            "<div class=\"empty-msg\">enter a topic or select from sidebar</div></div>",
-            unsafe_allow_html=True
-        )
+        render_home(use_ai)
 
 if __name__ == "__main__":
     main()
